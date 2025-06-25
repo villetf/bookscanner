@@ -1,4 +1,4 @@
-import keys
+import config.keys as keys
 import network
 from time import sleep
 from buzzer import soundBuzzer

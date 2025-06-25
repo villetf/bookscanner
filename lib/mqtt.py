@@ -222,3 +222,15 @@ class MQTTClient:
     def check_msg(self):
         self.sock.setblocking(False)
         return self.wait_msg()
+    
+    def is_connected(self):
+      try:
+         self.ping()
+         res = self.check_msg()
+         if res is None or res == b"PINGRESP":
+            return True
+         else:
+             return False
+      except Exception as e:
+         print("Ping misslyckades:", e)
+         return False

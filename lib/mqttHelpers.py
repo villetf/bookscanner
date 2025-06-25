@@ -1,7 +1,7 @@
 from time import sleep
 
 from lib.mqtt import MQTTClient
-import keys
+import config.keys as keys
 
 
 def connectToMQTT():
