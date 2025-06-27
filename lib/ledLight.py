@@ -5,7 +5,6 @@ redLed = Pin(16, Pin.OUT)
 
 def powerOnLed(color):
    if color == 'green':
-      print("Powering on green LED")
       greenLed.on()
       redLed.off()
    elif color == 'red':
