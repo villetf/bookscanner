@@ -2,8 +2,10 @@ import config.keys as keys
 import network
 from time import sleep
 from buzzer import soundBuzzer
+from ledLight import powerOnLed
 
 def connect():
+   powerOnLed('yellow')
    wlan = network.WLAN(network.STA_IF)         # Put modem on Station mode
    if not wlan.isconnected():                  # Check if already connected
       print('connecting to network...s')

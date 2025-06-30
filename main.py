@@ -23,8 +23,8 @@ print('Redo att skanna')
 
 uart = UART(0, baudrate=9600, tx=Pin(0), rx=Pin(1))
 
+powerOnLed('green')
 while True:
-   powerOnLed('green')
    if uart.any():
       soundBuzzer(0.1)
       isbn = uart.read()
