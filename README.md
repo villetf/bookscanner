@@ -97,8 +97,42 @@ This means that with fully charged batteries, the appliance should be able to ru
 
 ## Platform
 
-When the user have scanned a book, it is important that the fetched data can be shown, corrected, and manually confirmed before it is saved to the database. If the data would be saved immediately, you could end up with inaccurate or incomplete data in the database. This also makes it possible to fill in fields that cannot be fetched from the API. For example, original language is not somthing that the API:s return, so that always has to be filled in manually.
+When the user have scanned a book, it is important that the fetched data can be shown, corrected, and manually confirmed before it is saved to the database. If the data would be saved immediately, you could end up with inaccurate or incomplete data in the database. This also makes it possible to fill in fields that cannot be fetched from the API. For example, original language is not somthing that the API:s return, so that always has to be filled in manually, or left empty.
 
-To accomplish this I used Node-red, which is a tool used for low-code visual programming. Together with the palette (module) node-red-dashboard, it has support for creating interactive dashboards. Node-red is a self-hosted solution, and I run it in a Docker environment. 
+To accomplish this I used Node-red, which is a tool used for low-code visual programming. Together with the palette (node-red:s word for a module) node-red-dashboard, it has support for creating interactive dashboards. Node-red is a self-hosted solution, and I run it in a Docker environment (using [this container](https://hub.docker.com/r/nodered/node-red)). 
 
-Node-red is very suitable for this kind of project
+Node-red is very suitable for this kind of project since it, unless other platforms like Adafruit and Grafana, supports that the user can modify the data before sending it forward in the flow. Since it is primarly a low-code programming tool and not only a visulization tool, it also has a lot of support for programatically modifying the data in a lot of different ways. This means that it would be simple to, for example, rebuild the flow for a different API, as mentioned in the introduction.
+
+### MQTT broker
+
+The book data sent from the Pico is sent using MQTT, which means that we need to have an MQTT broker on the network. I use Mosquitto, but any broker would work. In my setup, Mosquitto is also run as a Docker container (using [this container](https://hub.docker.com/_/eclipse-mosquitto)), which makes it very easy and fast so set up.
+
+## The code
+
+The Micropython code that is being run on the Pico is found in this Github repository. The chart below describes the flow of the code:
+
+![Chart of the flow of the code](/img/Kodritning.png)
+
+When it comes to project structure, you may notice that there is a lot of files in the lib folder. Of these, only mqtt.py (which is the library used to connect with MQTT) is imported from other sources ([from the LNU Github](https://github.com/iot-lnu/pico-w/blob/main/network-examples/N5_WiFi_Mosquitto_Node-Red_Test/lib/mqtt.py)). The other files are just regular functions that are used in the code. The reason they are in own files and not in main.py or a single file is that I usually write JavaScript/TypeScript, and therefore like to refactor functions into their own files.
+
+## Transmitting the data
+
+As previously mentioned, the data is sent to Node-red using MQTT via the Mosquitto broker. Both for sending MQTT calls and making API calls towards the book API:s, WiFi is used. Data is sent every time a book is scanned.
+
+This setup may not be the best for this purpose. Since data is sent when a book is scanned, and not 24/7 at regular intervals as it would be on a regular IOT sensor appliance, the pros of MQTT does not really come to use. Instead, it introduces another dependency (an MQTT broker always has to be running), which also introduces another source of errors. In this appliance, it would probably be better to use a regular HTTP API call to send the data. Node-red has support for quickly setting up POST endpoints that recieve data, which means that you would eliminate the need for a separate broker.
+
+It is also worth to mention that the way that the data is handled is not optimal. Today, the API calls towards Google Books and Open Library are made on the Pico, and the data is also used to construct an object. Since the Pico is so extremely limited in resources, those kinds of actions should be moved to the server, which probably has thousands times more of processing power. How it could work is that the Pico simply collects the ISBN and sends it to Node-red, which is responsible for the rest of the process. This would also make troubleshooting and further development easier, since it is a lot easier to troubleshoot and error handle a Node-red flow than a Pico script.
+
+## Presenting the data
+
+As stated earlier, we use the node-red-dashboard palette to display the collected info about the book, correct or complete it, and send it. This is how it looks:
+
+![An image of the dashboard](./img/Dashboard.png)
+
+When a new book is scanned, the dashboard is automatically updated with the new book data.
+
+As seen on the image, some fields are empty. These kan be filled in manually, or left empty. When the Save button is clicked, the data is sent forward in the flow to be processed and sent to the API that saves the data to the database. If the Throw away button is clicked, all the info is discarded.
+
+The database used in the book system is MariaDB, which is an open source SQL database based on MySQL. Since MariaDB is so similar to MySQL, most tools that support MySQL also work with MariaDB. MySQL is owned by Oracle, which means that features at any time can be restricted by payment. With MariaDB, this problem is eliminated, and you also support the open source community instead of a tech giant.
+
+## Finalizing the design
