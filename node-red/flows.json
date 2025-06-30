@@ -1,0 +1,254 @@
+[
+    {
+        "id": "95d21e987071b592",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "5e137fdffe28b40d",
+        "type": "mqtt in",
+        "z": "95d21e987071b592",
+        "name": "",
+        "topic": "books/new",
+        "qos": "1",
+        "datatype": "auto-detect",
+        "broker": "7e0db7414cb79354",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 140,
+        "y": 380,
+        "wires": [
+            [
+                "4fc6abec7225f262"
+            ]
+        ]
+    },
+    {
+        "id": "8997dbb9a824f32d",
+        "type": "ui_form",
+        "z": "95d21e987071b592",
+        "name": "",
+        "label": "",
+        "group": "e6b6a8d407573120",
+        "order": 0,
+        "width": "0",
+        "height": "0",
+        "options": [
+            {
+                "label": "Book title",
+                "value": "title",
+                "type": "text",
+                "required": true,
+                "rows": null
+            },
+            {
+                "label": "Author",
+                "value": "author",
+                "type": "multiline",
+                "required": true,
+                "rows": 3
+            },
+            {
+                "label": "ISBN",
+                "value": "isbn",
+                "type": "number",
+                "required": true,
+                "rows": null
+            },
+            {
+                "label": "Year",
+                "value": "yearWritten",
+                "type": "number",
+                "required": false,
+                "rows": null
+            },
+            {
+                "label": "Genre",
+                "value": "genre",
+                "type": "text",
+                "required": false,
+                "rows": null
+            },
+            {
+                "label": "Format",
+                "value": "format",
+                "type": "text",
+                "required": false,
+                "rows": null
+            },
+            {
+                "label": "Language",
+                "value": "language",
+                "type": "text",
+                "required": false,
+                "rows": null
+            },
+            {
+                "label": "Original language",
+                "value": "originalLanguage",
+                "type": "text",
+                "required": false,
+                "rows": null
+            },
+            {
+                "label": "Cover link",
+                "value": "imageUrl",
+                "type": "text",
+                "required": false,
+                "rows": null
+            }
+        ],
+        "formValue": {
+            "title": "",
+            "author": "",
+            "isbn": "",
+            "yearWritten": "",
+            "genre": "",
+            "format": "",
+            "language": "",
+            "originalLanguage": "",
+            "imageUrl": ""
+        },
+        "payload": "",
+        "submit": "Save",
+        "cancel": "Throw away",
+        "topic": "inputData",
+        "topicType": "flow",
+        "splitLayout": false,
+        "className": "",
+        "x": 730,
+        "y": 380,
+        "wires": [
+            [
+                "6ab40ed1dfc5c75b"
+            ]
+        ]
+    },
+    {
+        "id": "bb061820a27d5bac",
+        "type": "function",
+        "z": "95d21e987071b592",
+        "name": "function 1",
+        "func": "msg.payload.author = msg.payload.author.join(\"\\n\")\n\nfor (const prop in msg.payload) {\n    if (msg.payload[prop] == \"\") {\n        msg.payload[prop] = \" \"\n    }\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 560,
+        "y": 380,
+        "wires": [
+            [
+                "8997dbb9a824f32d"
+            ]
+        ]
+    },
+    {
+        "id": "4fc6abec7225f262",
+        "type": "json",
+        "z": "95d21e987071b592",
+        "name": "",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 350,
+        "y": 380,
+        "wires": [
+            [
+                "bb061820a27d5bac"
+            ]
+        ]
+    },
+    {
+        "id": "a63812a856df8215",
+        "type": "debug",
+        "z": "95d21e987071b592",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1180,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "6ab40ed1dfc5c75b",
+        "type": "function",
+        "z": "95d21e987071b592",
+        "name": "function 2",
+        "func": "msg.payload.author = msg.payload.author.split(\"\\n\")\n\nfor (const prop in msg.payload) {\n    if (msg.payload[prop] == \" \" || msg.payload[prop] == \"\") {\n        msg.payload[prop] = null\n    }\n}\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 920,
+        "y": 380,
+        "wires": [
+            [
+                "a63812a856df8215"
+            ]
+        ]
+    },
+    {
+        "id": "7e0db7414cb79354",
+        "type": "mqtt-broker",
+        "name": "pi",
+        "broker": "192.168.10.50",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": "10",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "e6b6a8d407573120",
+        "type": "ui_group",
+        "name": "Add book",
+        "tab": "f707689619a5700f",
+        "order": 1,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "f707689619a5700f",
+        "type": "ui_tab",
+        "name": "Bookscanner",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    }
+]

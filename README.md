@@ -103,6 +103,8 @@ To accomplish this I used Node-red, which is a tool used for low-code visual pro
 
 Node-red is very suitable for this kind of project since it, unless other platforms like Adafruit and Grafana, supports that the user can modify the data before sending it forward in the flow. Since it is primarly a low-code programming tool and not only a visulization tool, it also has a lot of support for programatically modifying the data in a lot of different ways. This means that it would be simple to, for example, rebuild the flow for a different API, as mentioned in the introduction.
 
+The JSON file for this Node-red project is available [here](./node-red/flows.json). 
+
 ### MQTT broker
 
 The book data sent from the Pico is sent using MQTT, which means that we need to have an MQTT broker on the network. I use Mosquitto, but any broker would work. In my setup, Mosquitto is also run as a Docker container (using [this container](https://hub.docker.com/_/eclipse-mosquitto)), which makes it very easy and fast so set up.
@@ -112,6 +114,20 @@ The book data sent from the Pico is sent using MQTT, which means that we need to
 The Micropython code that is being run on the Pico is found in this Github repository. The chart below describes the flow of the code:
 
 ![Chart of the flow of the code](/img/Kodritning.png)
+
+In order to make the code work, you have to add a folder named `config` with a file named `keys.py` with the following content:
+
+```python
+   WIFI_SSID = 'wifi_name'
+   WIFI_PASS = 'wifi_password'
+
+   # MQTT server's configuration
+   MQTT_SERVER = "ip_to_mqtt_server"
+   MQTT_PORT = "port_to_mqtt_broker_(usually 1883)"
+   MQTT_CLIENT_ID = "id-1223"
+```
+
+Replace the values with your credentials.
 
 When it comes to project structure, you may notice that there is a lot of files in the lib folder. Of these, only mqtt.py (which is the library used to connect with MQTT) is imported from other sources ([from the LNU Github](https://github.com/iot-lnu/pico-w/blob/main/network-examples/N5_WiFi_Mosquitto_Node-Red_Test/lib/mqtt.py)). The other files are just regular functions that are used in the code. The reason they are in own files and not in main.py or a single file is that I usually write JavaScript/TypeScript, and therefore like to refactor functions into their own files.
 
@@ -135,4 +151,27 @@ As seen on the image, some fields are empty. These kan be filled in manually, or
 
 The database used in the book system is MariaDB, which is an open source SQL database based on MySQL. Since MariaDB is so similar to MySQL, most tools that support MySQL also work with MariaDB. MySQL is owned by Oracle, which means that features at any time can be restricted by payment. With MariaDB, this problem is eliminated, and you also support the open source community instead of a tech giant.
 
+No automations or triggers are applicable in this type of project.
+
 ## Finalizing the design
+
+The project turned out even better than I had hoped for, mainly because Node-red was more powerful than I knew, and can handle all sorts of data tranformation. At first, I thought that I would have to use some sort of display and a button to confirm or discard a book, but with Node-red you can also change the information that is being sent.
+
+![Image of the appliance](./img/result1.jpg)
+![Image of the appliance](./img/result2.jpg)
+
+### Work to do
+
+- Moving API fetching and data handling from the Pico to Node-red, as described in ![Transmitting the data](#transmitting-the-data). Also getting rid of MQTT and replacing it with HTTP API calls.
+- Getting a proper casing for the scanner. The challenge here is the battery case, because both the lower and the upper side of it needs to be easy accessible (the bottom to change batteries, the top to reach the on and off switch). It also does not help that I do not have access to a 3D printer.
+- Extending the features with for example the ability to check if a book is already added, or to add additional info to an already existing book.
+- Better error handling.
+
+## Links that helped me
+
+I found the following links useful when working with the project, check them out if you have any trouble:
+
+- [Lecture on UART](https://www.youtube.com/watch?v=TR-AHCjZ27M)
+- [Scanner documentation](https://www.waveshare.com/wiki/Barcode_Scanner_Module_(D))
+- [Additional details about the scanner](https://www.bastelgarage.ch/round-2d-barcode-qr-code-scanner-module-d)
+- [Organizing your breadboard](https://www.instructables.com/Breadboard-Organization/)
