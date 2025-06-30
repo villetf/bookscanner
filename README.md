@@ -4,13 +4,13 @@ Vilhelm Fontell (vf222it)
 
 ## Introduction
 
-This tutorial describes how to build a scanner for quickly adding information about books to a custom made book organization system. The goal is that you scan the barcode of a book, and data about the book is fetched from Google Books and Open Library based on the ISBN number. The data is then automatically inserterted into a Node-Red dashboard where the user can check the information and change or complete it if something is wrong or missing. The user then saves the book, and it is inserted into the book system via an API call.
+This tutorial describes how to build a scanner for quickly adding information about books to a custom made book organization system. The user scans the barcode of a book, and data about the book is fetched from Google Books and Open Library based on the ISBN number. The data is then automatically inserted into a Node-Red dashboard where the user can check the information and complete it or change it if something is wrong or missing. The user then saves the book, which is inserted into the book system via an API call.
 
 Estimated time to complete this tutorial is 4-8 hours.
 
 ### About the book system
 
-The book organisation system previously mentioned is called [Bokportalen](https://github.com/villetf/bokportalen/tree/dev) and is a web system that I am currently building in Node.js and Angular. The purpose of it is to create a complete database of all the books that you own and make it possible to view statistics and keep track of which books you own. Even though it is theoretically possible to set up yourself, it would require a lot of configuration, and would not be complete since the work is not done yet.
+The book organisation system previously mentioned is called [Bokportalen](https://github.com/villetf/bokportalen/tree/dev), which is a web system that I am currently building in Node.js and Angular. The purpose of Bokportalen is to create a complete database of all the books that you own and make it possible to view statistics and keep track of which books you own. Even though it is theoretically possible to set up Bokportalen yourself, it would require a lot of configuration, and would not be fully functional since the work is not done yet.
 
 However, it would be possible to modify the API calls to suit any other book system, such as Goodreads or Hardcover. Since the final API calls to post the book are just a fraction of the project, it should not be too much work.
 
@@ -61,7 +61,7 @@ As my IDE, I am using Visual Studio Code (VSCode) together with the MicroPico pl
 6. Download [this file](https://micropython.org/resources/firmware/RPI_PICO_W-20250415-v1.25.0.uf2) (for the RP2040) and place it on your Pico. The Pico will disappear as an external drive.
 7. Unplug the Pico and plug it back in. It should connect automatically to MicroPico, and you should see a green line in the terminal with some info about your Pico.
 8. Press Cmd/Ctrl+Shift+P and type "micropico". Select the option "MicroPico: Upload project to Pico". The project will be copied to the Pico.
-9. Open the file main.py and click "Start" in the lower left bar of VSCode. The project will run and, if everything on the board is correctly connected, you will hear three beeps from the buzzer if the network connection was successful. The scanner is ready to scan.
+9. Open the file main.py and click "Start" in the lower left bar of VSCode. The project will run and, if everything on the board is correctly connected, you will hear three beeps from the buzzer if the network connection was successful. The scanner is now ready to scan.
 
 ## Putting everything together
 
@@ -97,7 +97,7 @@ This means that with fully charged batteries, the appliance should be able to ru
 
 ## Platform
 
-When the user have scanned a book, it is important that the fetched data can be shown, corrected, and manually confirmed before it is saved to the database. If the data would be saved immediately, you could end up with inaccurate or incomplete data in the database. This also makes it possible to fill in fields that cannot be fetched from the API. For example, original language is not somthing that the API:s return, so that always has to be filled in manually, or left empty.
+When the user have scanned a book, it is important that the fetched data can be shown, corrected if wrong, and manually confirmed before it is saved to the database. If the data would be saved immediately, you could end up with inaccurate or incomplete data in the database. This also makes it possible to fill in fields that cannot be fetched from the API. For example, original language is not somthing that the API:s return, so that always has to be filled in manually, or left empty.
 
 To accomplish this I used Node-red, which is a tool used for low-code visual programming. Together with the palette (node-red:s word for a module) node-red-dashboard, it has support for creating interactive dashboards. Node-red is a self-hosted solution, and I run it in a Docker environment (using [this container](https://hub.docker.com/r/nodered/node-red)). 
 
@@ -107,7 +107,7 @@ The JSON file for this Node-red project is available [here](./node-red/flows.jso
 
 ### MQTT broker
 
-The book data sent from the Pico is sent using MQTT, which means that we need to have an MQTT broker on the network. I use Mosquitto, but any broker would work. In my setup, Mosquitto is also run as a Docker container (using [this container](https://hub.docker.com/_/eclipse-mosquitto)), which makes it very easy and fast so set up.
+The book data sent from the Pico is sent using MQTT, a lightweight network protocol built for small data loads, such as IoT units. It uses a publish-subscribe system, which means that we need to have an MQTT broker on the network. I use Mosquitto, but any broker would work. In my setup, Mosquitto is also run as a Docker container (using [this container](https://hub.docker.com/_/eclipse-mosquitto)), which makes it very easy and fast so set up.
 
 ## The code
 
@@ -129,15 +129,15 @@ In order to make the code work, you have to add a folder named `config` with a f
 
 Replace the values with your credentials.
 
-When it comes to project structure, you may notice that there is a lot of files in the lib folder. Of these, only mqtt.py (which is the library used to connect with MQTT) is imported from other sources ([from the LNU Github](https://github.com/iot-lnu/pico-w/blob/main/network-examples/N5_WiFi_Mosquitto_Node-Red_Test/lib/mqtt.py)). The other files are just regular functions that are used in the code. The reason they are in own files and not in main.py or a single file is that I usually write JavaScript/TypeScript, and therefore like to refactor functions into their own files.
+When it comes to project structure, you may notice that there is a lot of files in the lib folder. Of these, only mqtt.py (which is the library used to connect with MQTT) is imported from other sources ([from the LNU Github](https://github.com/iot-lnu/pico-w/blob/main/network-examples/N5_WiFi_Mosquitto_Node-Red_Test/lib/mqtt.py)). The other files are just regular functions that are used in the code. The reason they are placed in own files and not in main.py or a single file is that I usually write JavaScript/TypeScript, and therefore like to refactor functions into their own files.
 
 ## Transmitting the data
 
 As previously mentioned, the data is sent to Node-red using MQTT via the Mosquitto broker. Both for sending MQTT calls and making API calls towards the book API:s, WiFi is used. Data is sent every time a book is scanned.
 
-This setup may not be the best for this purpose. Since data is sent when a book is scanned, and not 24/7 at regular intervals as it would be on a regular IOT sensor appliance, the pros of MQTT does not really come to use. Instead, it introduces another dependency (an MQTT broker always has to be running), which also introduces another source of errors. In this appliance, it would probably be better to use a regular HTTP API call to send the data. Node-red has support for quickly setting up POST endpoints that recieve data, which means that you would eliminate the need for a separate broker.
+This setup may not be the best for the purpose of the scanner. Since data is sent when a book is scanned, and not 24/7 at regular intervals as it would be on a regular IOT sensor appliance, the pros of MQTT does not really come to use. Instead, it introduces another dependency (an MQTT broker always has to be running), which also introduces another source of errors. In this appliance, it would probably be better to use a regular HTTP API call to send the data. Node-red has support for quickly setting up POST endpoints that recieve data, which means that you would eliminate the need for a separate broker.
 
-It is also worth to mention that the way that the data is handled is not optimal. Today, the API calls towards Google Books and Open Library are made on the Pico, and the data is also used to construct an object. Since the Pico is so extremely limited in resources, those kinds of actions should be moved to the server, which probably has thousands times more of processing power. How it could work is that the Pico simply collects the ISBN and sends it to Node-red, which is responsible for the rest of the process. This would also make troubleshooting and further development easier, since it is a lot easier to troubleshoot and error handle a Node-red flow than a Pico script.
+It is also worth mentioning that the way that the data is handled is not optimal in how it works today. The current solution is that the API calls towards Google Books and Open Library are made on the Pico, and the data is also used to construct an object. Since the Pico is extremely limited in resources, a better solution would be to move those actions to the server, which probably has thousands times more of processing power. In that case, the Pico would simply collect the ISBN and send it to Node-red, which would be responsible for the rest of the process. This would also make troubleshooting and further development easier, since it is a lot easier to troubleshoot and error handle a Node-red flow than a Pico script.
 
 ## Presenting the data
 
@@ -145,17 +145,17 @@ As stated earlier, we use the node-red-dashboard palette to display the collecte
 
 ![An image of the dashboard](./img/Dashboard.png)
 
-When a new book is scanned, the dashboard is automatically updated with the new book data.
+When a new book is scanned, the dashboard is automatically updated with the new book data. This should not take more than a few seconds.
 
-As seen on the image, some fields are empty. These kan be filled in manually, or left empty. When the Save button is clicked, the data is sent forward in the flow to be processed and sent to the API that saves the data to the database. If the Throw away button is clicked, all the info is discarded.
+As seen on the image, some fields are empty. These can be filled in manually, or left empty. When the Save button is clicked, the data is sent forward in the flow to be processed and sent to the API that saves the data to the database. If the Throw away button is clicked, all the info is discarded.
 
-The database used in the book system is MariaDB, which is an open source SQL database based on MySQL. Since MariaDB is so similar to MySQL, most tools that support MySQL also work with MariaDB. MySQL is owned by Oracle, which means that features at any time can be restricted by payment. With MariaDB, this problem is eliminated, and you also support the open source community instead of a tech giant.
+The database used in the book system is MariaDB, which is an open source SQL database based on MySQL. Since MariaDB is so similar to MySQL, most tools that support MySQL also work with MariaDB. MySQL is owned by Oracle, which are known to suddenly demand payment for previously free features, which creates a risk that features at any time can be restricted by payment. With MariaDB, this problem is eliminated, and you also support the open source community instead of a tech giant.
 
 No automations or triggers are applicable in this type of project.
 
 ## Finalizing the design
 
-The project turned out even better than I had hoped for, mainly because Node-red was more powerful than I knew, and can handle all sorts of data tranformation. At first, I thought that I would have to use some sort of display and a button to confirm or discard a book, but with Node-red you can also change the information that is being sent.
+The project turned out even better than I had hoped for, mainly because Node-red was more powerful than I expected, and could handle all sorts of data tranformation. At first, I thought that I would have to use some sort of display and a button to confirm or discard a book, but with Node-red you can do that without the need for additional hardware. On top of that, you can also change the information that is being sent.
 
 ![Image of the appliance](./img/result1.jpg)
 ![Image of the appliance](./img/result2.jpg)
@@ -163,7 +163,7 @@ The project turned out even better than I had hoped for, mainly because Node-red
 ### Work to do
 
 - Moving API fetching and data handling from the Pico to Node-red, as described in ![Transmitting the data](#transmitting-the-data). Also getting rid of MQTT and replacing it with HTTP API calls.
-- Getting a proper casing for the scanner. The challenge here is the battery case, because both the lower and the upper side of it needs to be easy accessible (the bottom to change batteries, the top to reach the on and off switch). It also does not help that I do not have access to a 3D printer.
+- Getting a proper casing for the scanner. The challenge here is the battery case, because both the lower and the upper side of it needs to be easy accessible (the bottom to change batteries, the top to reach the on/off switch). It also does not help that I do not have access to a 3D printer.
 - Extending the features with for example the ability to check if a book is already added, or to add additional info to an already existing book.
 - Better error handling.
 
