@@ -157,7 +157,7 @@ No automations or triggers are applicable in this type of project.
 
 The project turned out even better than I had hoped for, mainly because Node-red was more powerful than I expected, and could handle all sorts of data tranformation. At first, I thought that I would have to use some sort of display and a button to confirm or discard a book, but with Node-red you can do that without the need for additional hardware. On top of that, you can also change the information that is being sent.
 
-### [Check out a video of the scanner here](https://vimeo.com/1100272539?share=copy#t=36.139)
+### [Check out a video of the scanner here](https://youtu.be/j10pH_nGgNE)
 
 ![Image of the appliance](./img/result1.jpg)
 ![Image of the appliance](./img/result2.jpg)
