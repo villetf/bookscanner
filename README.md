@@ -160,7 +160,7 @@ The project turned out even better than I had hoped for, mainly because Node-red
 ![Image of the appliance](./img/result1.jpg)
 ![Image of the appliance](./img/result2.jpg)
 
-### [Check out a video of the scanner here](./img/bookscanner.MOV)
+### [Check out a video of the scanner here](./img/bookscanner.mp4)
 
 ### Work to do
 
